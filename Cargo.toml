@@ -1,0 +1,33 @@
+[package]
+name = "youtube_search"
+version = "1.0.0"
+edition = "2021"
+authors = ["Marc Cámara"]
+description = "A crate to navigate the YouTube API"
+readme = "README.md"
+repository = "https://github.com/mcamara/youtube_search"
+rust-version = "1.72"
+license-file = "LICENSE"
+keywords = [
+    "youtube",
+    "search",
+    "lemnoslife"
+]
+categories = [
+    "api", 'youtube'
+]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.44"
+async-trait = "0.1.72"
+reqwest = {version = "0.11.18", features = ["cookies", "gzip", "json"]}
+serde = { version = "1.0.183", features = ["derive"] }
+thiserror = "1.0.30"
+tokio = { version = "1.29.1", features = ["full"] }
+url = "2.2.2"
+
+[dev-dependencies]
+mockito = "1.1.0"
