@@ -11,28 +11,54 @@ struct ChannelReturn {
 
 #[derive(Deserialize)]
 struct ChannelItemsReturn {
-    id: Option<String>,
+    snippet: ChannelSnippetReturn,
+}
+
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ChannelSnippetReturn {
+    channel_id: String,
+    channel_title: String,
+    channel_handle: String,
 }
 
 pub async fn retrieve_channel_id<T: HttpClientTrait>(
-    name: &str,
+    handle: &str,
     client: &Arc<T>,
-) -> Result<String, RequestError> {
-    let url = Url::parse_with_params("https://yt.lemnoslife.com/channels", &[("cId", name)])
-        .map_err(|e| RequestError::Other(e.to_string()))?;
+) -> Result<(String, String), RequestError> {
+    let url = Url::parse_with_params(
+        "https://yt.lemnoslife.com/search",
+        &[
+            ("q", handle),
+            ("type", "channel"),
+            ("part", "snippet"),
+            ("maxResults", "10"),
+        ],
+    )
+    .map_err(|e| RequestError::Other(e.to_string()))?;
 
     let response = client.get(url.as_str()).await.map_err(RequestError::Http)?;
     let channel_data: ChannelReturn = process_response(response).await?;
 
-    let channel_id = channel_data
-        .items
-        .first()
-        .map(|item| item.id.clone())
-        .ok_or(RequestError::NotFound);
+    match find_channel_by_handle(&channel_data.items, handle) {
+        Ok(channel_snippet) => Ok((
+            channel_snippet.channel_id.clone(),
+            channel_snippet.channel_title.clone(),
+        )),
+        Err(e) => Err(e),
+    }
+}
 
-    match channel_id {
-        Ok(Some(channel_id)) => Ok(channel_id),
-        Ok(None) => Err(RequestError::NotFound),
-        Err(e) => Err(RequestError::ResponseNotParsed(e.into())),
+fn find_channel_by_handle(
+    channels: &[ChannelItemsReturn],
+    target_handle: &str,
+) -> Result<ChannelSnippetReturn, RequestError> {
+    let target_handle = format!("@{}", target_handle);
+    match channels
+        .iter()
+        .find(|&channel| channel.snippet.channel_handle == target_handle)
+    {
+        Some(channel) => Ok(channel.snippet.clone()),
+        None => Err(RequestError::NotFound),
     }
 }

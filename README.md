@@ -21,7 +21,7 @@ This Rust library provides an asynchronous interface for interacting with YouTub
 Add the following line to your `Cargo.toml` file under the `[dependencies]` section:
 
 ```toml
-youtube_search = "1.0.0"
+youtube_search = "1.0.1"
 ```
 
 ## Usage
@@ -37,7 +37,7 @@ use youtube_search::{
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let channel = find_youtube_channel("ChannelName").await?;
-    println!("Channel ID: {}", channel.channel_id);
+    println!("Channel Title: {}", channel.title);
 
     let videos = find_latest_videos(&channel, 5).await?;
     println!("Latest videos: {:?}", videos);

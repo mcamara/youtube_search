@@ -1,6 +1,6 @@
 [package]
 name = "youtube_search"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["Marc Cámara"]
 description = "A crate to navigate the YouTube API"
@@ -16,9 +16,6 @@ keywords = [
 categories = [
     "api", 'youtube'
 ]
-
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.44"

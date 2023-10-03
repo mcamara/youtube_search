@@ -11,10 +11,10 @@ use youtube::{
     video::{Video, VideoError},
 };
 
-/// Find a youtube channel by name
-pub async fn find_youtube_channel(name: &str) -> Result<Channel, ChannelError> {
+/// Find a youtube channel by handle: https://www.youtube.com/user/@{handle}
+pub async fn find_youtube_channel(handle: &str) -> Result<Channel, ChannelError> {
     let client = Arc::new(HttpClient::new());
-    Channel::initialize(name.to_string(), client.clone()).await
+    Channel::initialize(handle.to_string(), client.clone()).await
 }
 
 /// Find latest videos from a channel, will return an error if the channel has no videos

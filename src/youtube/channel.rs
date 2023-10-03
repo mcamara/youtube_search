@@ -11,7 +11,8 @@ use super::video::Video;
 // A youtube channel with some useful data
 #[derive(Debug)]
 pub struct Channel {
-    pub name: String,
+    pub handle: String,
+    pub title: String,
     pub channel_id: String,
 }
 
@@ -23,22 +24,27 @@ pub struct ChannelError {
 }
 
 impl Channel {
-    fn new(name: String, channel_id: String) -> Self {
-        Self { name, channel_id }
+    fn new(handle: String, title: String, channel_id: String) -> Self {
+        Self {
+            handle,
+            title,
+            channel_id,
+        }
     }
 
     pub async fn initialize<T: HttpClientTrait>(
-        name: String,
+        handle: String,
         client: Arc<T>,
     ) -> Result<Self, ChannelError> {
-        let channel_id = retrieve_channel_id(&name, &client)
-            .await
-            .map_err(|e| ChannelError {
-                source: Some(e.into()),
-                msg: "Failed to get channel id".to_owned(),
-            })?;
+        let (channel_id, title) =
+            retrieve_channel_id(&handle, &client)
+                .await
+                .map_err(|e| ChannelError {
+                    source: Some(e.into()),
+                    msg: "Failed to get channel id".to_owned(),
+                })?;
 
-        Ok(Self::new(name, channel_id))
+        Ok(Self::new(handle, title, channel_id))
     }
 
     async fn get_main_playlist_id<T: HttpClientTrait>(
@@ -78,19 +84,33 @@ mod tests {
     #[tokio::test]
     async fn channel_initialization_succeeds_with_valid_id() {
         let client = create_client_with_responses(vec![
-            r#"{"items": [
-            {
-                "id": "id_channel1"
-            }
-        ]}"#,
+            r#"{
+                "items": [
+                    {
+                        "snippet": {
+                            "channelId": "channel_id",
+                            "channelTitle": "Another title",
+                            "channelHandle": "@another_channel"
+                        }
+                    },
+                    {
+                        "snippet": {
+                            "channelId": "channel_id",
+                            "channelTitle": "Channel title",
+                            "channelHandle": "@channel1"
+                        }
+                    }
+                ]
+            }"#,
         ])
         .await;
         let channel = Channel::initialize("channel1".to_string(), client)
             .await
             .ok()
             .unwrap();
-        assert_eq!(channel.channel_id, "id_channel1");
-        assert_eq!(channel.name, "channel1");
+        assert_eq!(channel.channel_id, "channel_id");
+        assert_eq!(channel.title, "Channel title");
+        assert_eq!(channel.handle, "channel1");
     }
 
     #[tokio::test]
@@ -108,13 +128,19 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn channel_initialization_fails_with_null_id() {
+    async fn channel_initialization_fails_with_no_id() {
         let client = create_client_with_responses(vec![
-            r#"{"items": [
-            {
-                "id": null
-            }
-        ]}"#,
+            r#"{
+                "items": [
+                    {
+                        "snippet": {
+                            "channelId": "channel_id",
+                            "channelTitle": "Channel title",
+                            "channelHandle": "@no_match"
+                        }
+                    }
+                ]
+            }"#,
         ])
         .await;
         let channel = Channel::initialize("channel1".to_string(), client).await;
@@ -123,7 +149,11 @@ mod tests {
 
     #[tokio::test]
     async fn main_playlist_is_found_for_a_channel() {
-        let channel = Channel::new("channel1".to_string(), "id_channel1".to_string());
+        let channel = Channel::new(
+            "channel1".to_string(),
+            "title".to_string(),
+            "id_channel1".to_string(),
+        );
         let client = create_client_with_responses(vec![
             r#"{"items": [
             {
@@ -143,7 +173,11 @@ mod tests {
 
     #[tokio::test]
     async fn main_playlist_search_fails_if_channel_do_not_have_any_playlist() {
-        let channel = Channel::new("channel1".to_string(), "id_channel1".to_string());
+        let channel = Channel::new(
+            "channel1".to_string(),
+            "title".to_string(),
+            "id_channel1".to_string(),
+        );
         let client = create_client_with_responses(vec![
             r#"{"items": [
             {
@@ -163,7 +197,11 @@ mod tests {
 
     #[tokio::test]
     async fn videos_from_channel_are_returned() {
-        let channel = Channel::new("channel1".to_string(), "id_channel1".to_string());
+        let channel = Channel::new(
+            "channel1".to_string(),
+            "title".to_string(),
+            "id_channel1".to_string(),
+        );
         let playlist_response = r#"{"items": [
             {
                 "contentDetails": {
@@ -222,7 +260,11 @@ mod tests {
 
     #[tokio::test]
     async fn videos_from_channel_cannot_be_retrieved_when_response_is_empty() {
-        let channel = Channel::new("channel1".to_string(), "id_channel1".to_string());
+        let channel = Channel::new(
+            "channel1".to_string(),
+            "title".to_string(),
+            "id_channel1".to_string(),
+        );
         let playlist_response = r#"{"items": [
             {
                 "contentDetails": {

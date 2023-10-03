@@ -30,7 +30,7 @@ impl HttpClientTrait for MockHttpClient {
         let mut server = mockito::Server::new();
 
         let mut responses = self.responses.lock().await;
-        let response = responses.pop().unwrap_or_else(|| "".to_string());
+        let response = responses.pop().unwrap_or_default();
 
         let _mock = server
             .mock("GET", "/")
