@@ -1,12 +1,12 @@
 [package]
 name = "youtube_search"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 authors = ["Marc Cámara"]
 description = "A crate to navigate the YouTube API"
 readme = "README.md"
 repository = "https://github.com/mcamara/youtube_search"
-rust-version = "1.72"
+rust-version = "1.70"
 license-file = "LICENSE"
 keywords = [
     "youtube",

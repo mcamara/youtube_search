@@ -1,5 +1,8 @@
 # YouTube Search
 
+[![Crates.io](https://img.shields.io/crates/v/youtube_search)](https://crates.io/crates/youtube_search)
+[![Run tests](https://github.com/mcamara/youtube_search/actions/workflows/tests.yml/badge.svg)](https://github.com/mcamara/youtube_search/actions/workflows/tests.yml)
+
 ## Overview
 
 This Rust library provides an asynchronous interface for interacting with YouTube channels and videos. It uses the [lemnoslife youtube API](https://yt.lemnoslife.com) to fetch data from YouTube without the use of an API key. Please consider supporting them if you find this library useful.
